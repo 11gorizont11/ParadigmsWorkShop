@@ -3,7 +3,27 @@
 const fs = require('node:fs');
 
 class Future {
-  // Put implementation here
+  constructor(computation) {
+    this.computation = computation;
+  }
+
+  map(fn) {
+    return new Future((reject, resolve) => {
+      this.computation(reject, (value) => resolve(fn(value)));
+    });
+  }
+
+  chain(fn) {
+    return new Future((reject, resolve) => {
+      this.computation(reject, (value) => {
+        fn(value).fork(reject, resolve);
+      });
+    });
+  }
+
+  fork(onError, onSuccess) {
+    this.computation(onError, onSuccess);
+  }
 }
 
 const futurify = (fn) =>
